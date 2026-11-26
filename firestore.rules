@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuth() {
+      return request.auth != null;
+    }
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isAdmin() {
+      return isAuth() && (getUserRole() == 'admin' || getUserRole() == 'superadmin');
+    }
+    function isSuperAdmin() {
+      return isAuth() && getUserRole() == 'superadmin';
+    }
+
+    // Movies catalog - any signed-in user can read; only admin/superadmin can write
+    match /movies/{movieId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Series episodes - any signed-in user can read; only admin/superadmin can write
+    match /episodes/{epId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // User accounts - read own or superadmin; write own or superadmin
+    match /users/{userId} {
+      allow read: if isAuth() && (request.auth.uid == userId || isSuperAdmin());
+      allow write: if isAuth() && (request.auth.uid == userId || isSuperAdmin());
+    }
+
+    // Watch history - user can create their own logs; user reads own, superadmin reads all
+    match /watchHistory/{histId} {
+      allow read: if isAuth() && (request.auth.uid == resource.data.userId || isSuperAdmin());
+      allow write: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
