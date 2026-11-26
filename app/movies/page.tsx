@@ -22,7 +22,7 @@ export default function MoviesPage() {
     if (user) getAllMovies().then((m) => { setMovies(m); setFetching(false); });
   }, [user]);
 
-  const genres = [...new Set(movies.map((m) => m.genre).filter(Boolean))];
+  const genres = Array.from(new Set(movies.map((m) => m.genre).filter(Boolean)));
   const filtered = movies.filter((m) => {
     const typeMatch =
       filter === 'all' ||

@@ -65,7 +65,7 @@ export default function WatchPage() {
   }
 
   const rawVideoUrl = movie.type === 'series' ? currentEp?.videoUrl : movie.videoUrl;
-  const seasons = [...new Set(episodes.map((e: any) => e.season))].sort();
+  const seasons = Array.from(new Set(episodes.map((e: any) => e.season))).sort();
   const seasonEps = episodes.filter((e: any) => e.season === season);
 
   // Helper to construct genuine download link for any video (including Google Drive)
